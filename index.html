@@ -4,8 +4,33 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa Editor - Tibia Javascript</title>
+
+    <style type="text/css">
+        body {
+            background:#333;
+            margin:0;
+            padding:0;
+            overflow: hidden;
+        }
+    </style>
+
 </head>
 <body>
-    
+    <canvas id="mapa"></canvas>
+
+
+    <script>
+        //DEFINE AS VARIAVEIS DO CANVAS
+        const cnv = document.querySelector("#mapa");
+        const ctx = cnv.getContext("2d");
+
+        //DEFINE O TAMANHO DO CANVAS
+        cnv.width = innerWidth;
+        cnv.height = innerHeight;
+
+        //CRIANDO MEU PRIMEIRO DESENHO
+        ctx.fillRect(0, 0, 50, 50);
+
+    </script>
 </body>
 </html>
