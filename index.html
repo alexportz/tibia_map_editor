@@ -126,6 +126,9 @@
             //Desenha o Mapa
             mapaPrincipal.render();
 
+            //Renderiza cada Sqm da Matrix
+            mapaPrincipal.matriz.forEach( (sqm) => { sqm.render(); })
+
             //Chama a função novamente
             requestAnimationFrame(loop);
         }
@@ -145,8 +148,14 @@
         //Função Mouse - Clique
         addEventListener("mousedown", function(e){
             mouse.clicado = true;
-            let meuSqm1 = new Sqm(ctx, mouse.posX, mouse.posY, defaultSqmSizeW, defaultSqmSizeH);
-            meuSqm1.render();
+            
+            //Instancia um novo SQM na posição clicada
+            let sqmAtual = new Sqm(ctx, mouse.posX, mouse.posY, defaultSqmSizeW, defaultSqmSizeH);
+
+            //Adicionar o Sqm Instanciado à Matrix do Mapa
+            mapaPrincipal.matriz.push(sqmAtual);
+            console.log(mapaPrincipal.matriz);
+
             //console.log("Clicou");
         })
         //Função Mouse - Soltou Clique
