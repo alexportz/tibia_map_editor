@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -28,8 +28,99 @@
         cnv.width = innerWidth;
         cnv.height = innerHeight;
 
-        //CRIANDO MEU PRIMEIRO DESENHO
-        ctx.fillRect(0, 0, 50, 50);
+        //DEFINIÇÕES INICIAIS DO PROJETO
+        //Definições de Tela
+        let screenSizeW = innerWidth;
+        let screenSizeH = innerHeight;
+        //Definições do Sqm
+        let defaultSqmPositionX = 50;
+        let defaultSqmPositionY = 50;
+        let defaultSqmSizeW = 50;
+        let defaultSqmSizeH = 50;
+        //Definições do Mapa
+        let totalSqmX = 20;
+        let totalSqmY = 10;
+        let defaultMapaPositionX = 50;
+        let defaultMapaPositionY = 50;
+        let defaultMapaSizeW = totalSqmX * defaultSqmPositionX;
+        let defaultMapaSizeH = totalSqmY * defaultSqmPositionY;
+
+        
+        //////////////////////CLASSES////////////////////////////////
+        class Mouse {
+            constructor(){
+                this.posX = 0;
+                this.posY = 0;
+                this.clicado = false;
+                this.movendo = false;
+            }
+        }
+
+        class Sqm {
+            constructor( context, positionX, positionY, sizeWidth, sizeHeight){
+                this.posX = positionX;
+                this.posY = positionY;
+                this.sizeW = sizeWidth;
+                this.sizeH = sizeHeight;
+                this.ctx = context;
+                this.actualSprite = null;
+                this.actualColor = null;
+            }
+            render(){
+                this.ctx.fillRect(this.posX,this.posY,this.sizeW,this.sizeH);
+            }
+        }
+
+        class Mapa {
+            constructor(context, positionX, positionY, sizeWidth, sizeHeight){
+                this.posX = positionX;
+                this.posY = positionY;
+                this.sizeW = sizeWidth;
+                this.sizeH = sizeHeight;
+                this.ctx = context;
+                this.matriz = []
+            }
+
+            render(){
+                this.ctx.strokeStyle = "#CCC";
+                this.ctx.strokeRect( this.posX, this.posY, this.sizeW, this.sizeH);
+            }
+        }
+
+        //////////////////////FUNÇÔES////////////////////////////////
+        //Função Inicial que é chamada ao iniciar a página
+        function start(){
+            //Inicia o Loop
+            loop();
+
+        }
+
+        //Função que executa a todo momento, e chama ela mesmo (loop)
+        function loop(){
+
+            //Desenha o Mapa
+            mapaPrincipal.render();
+
+            meuSqm1.render(); 
+
+            //Chama a função novamente
+            requestAnimationFrame(loop);
+        }
+
+        //Função de Desenho
+        function draw(ctx,posX,posY,sizeW,sizeH){
+            ctx.fillRect(posX,posY,sizeW,sizeH);
+        }
+        
+
+        //Instâncias
+        let mapaPrincipal = new Mapa(ctx, defaultMapaPositionX, defaultMapaPositionY, defaultMapaSizeW, defaultMapaSizeH);
+        let meuSqm1 = new Sqm(ctx, defaultSqmPositionX,defaultSqmPositionY,defaultSqmSizeW,defaultSqmSizeH);
+
+        //Inicia o carregamento geral
+        start();
+
+
 
     </script>
 </body>
