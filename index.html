@@ -138,24 +138,44 @@
             ctx.fillRect(posX,posY,sizeW,sizeH);
         }
 
+        //Função que Retorna posição exata do SQM
+        function retornarSqmExato(mouseX, mouseY, mapa){
+            let colunaClicada = Math.floor( (mouseX - mapa.posX) / mapa.sqmSizeX);
+            let linhaClicada = Math.floor( (mouseY - mapa.posY) / mapa.sqmSizeY);
+
+            //Retorna Coluna e Linha do clique
+            return { x: colunaClicada, y: linhaClicada }
+
+            //console.log(colunaClicada, linhaClicada);
+        }
+
+
         //Função Mouse - Movimentação
         addEventListener("mousemove", function(e){
             mouse.posX = e.clientX;
             mouse.posY = e.clientY;
             //console.log(mouse.posX, mouse.posY);
         })
-
         //Função Mouse - Clique
         addEventListener("mousedown", function(e){
             mouse.clicado = true;
+
+            //Pegar o ponto do SQM Exato
+            let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal); 
             
             //Instancia um novo SQM na posição clicada
-            let sqmAtual = new Sqm(ctx, mouse.posX, mouse.posY, defaultSqmSizeW, defaultSqmSizeH);
+            let sqmAtual = new Sqm(
+                ctx,
+                sqmPosition.x * defaultSqmSizeW + mapaPrincipal.posX,
+                sqmPosition.y * defaultSqmSizeH + mapaPrincipal.posY,
+                defaultSqmSizeW,
+                defaultSqmSizeH
+            );
 
             //Adicionar o Sqm Instanciado à Matrix do Mapa
             mapaPrincipal.matriz.push(sqmAtual);
-            console.log(mapaPrincipal.matriz);
-
+            
+            //console.log(mapaPrincipal.matriz);
             //console.log("Clicou");
         })
         //Função Mouse - Soltou Clique
