@@ -38,7 +38,7 @@
         let defaultSqmSizeW = 50;
         let defaultSqmSizeH = 50;
         //Definições do Mapa
-        let totalSqmX = 20;
+        let totalSqmX = 30;
         let totalSqmY = 10;
         let defaultMapaPositionX = 150;
         let defaultMapaPositionY = 50;
@@ -57,7 +57,7 @@
         }
 
         class Sqm {
-            constructor( context, positionX, positionY, sizeWidth, sizeHeight){
+            constructor( context, positionX, positionY, sizeWidth, sizeHeight, numeroColuna, numeroLinha){
                 this.posX = positionX;
                 this.posY = positionY;
                 this.sizeW = sizeWidth;
@@ -65,6 +65,8 @@
                 this.ctx = context;
                 this.actualSprite = null;
                 this.actualColor = null;
+                this.coluna = numeroColuna;
+                this.linha = numeroLinha;
             }
             render(){
                 this.ctx.fillRect(this.posX,this.posY,this.sizeW,this.sizeH);
@@ -118,6 +120,8 @@
             //Inicia o Loop
             loop();
 
+            //Instancia todos os SQMS
+            instanciaTodosSqms(totalSqmX, totalSqmY);
         }
 
         //Função que executa a todo momento, e chama ela mesmo (loop)
@@ -131,11 +135,6 @@
 
             //Chama a função novamente
             requestAnimationFrame(loop);
-        }
-
-        //Função de Desenho
-        function draw(ctx,posX,posY,sizeW,sizeH){
-            ctx.fillRect(posX,posY,sizeW,sizeH);
         }
 
         //Função que Retorna posição exata do SQM
@@ -154,6 +153,45 @@
             //console.log(colunaClicada, linhaClicada);
         }
 
+        //Função que Instancia os SQMs
+        function instanciaTodosSqms(totalSqmX, totalSqmY){
+            
+            //Variaveis contadoras temporarias
+            let sqmColunaX = 0;
+            let sqmColunaY = 0;
+            //Inicia o Loop
+            for (let i=0; i < totalSqmY; i++){
+                for(let j=0; j < totalSqmX; j++){
+                   
+
+                    //Instancia um novo SQM na posição clicada
+                    let sqmAtual = new Sqm(
+                        ctx,
+                        sqmColunaX * defaultSqmSizeW + mapaPrincipal.posX,
+                        sqmColunaY * defaultSqmSizeH + mapaPrincipal.posY,
+                        defaultSqmSizeW,
+                        defaultSqmSizeH,
+                        sqmColunaX,
+                        sqmColunaY
+                    );
+
+                    //Incrementa o nro da Coluna
+                    sqmColunaX++;
+
+                    //Verificar se passou o Limite do Mapa
+                    if (sqmColunaX >= totalSqmX ){
+                        sqmColunaX = 0;
+                        sqmColunaY++;
+                    }
+
+                    //Adicionar o Sqm Instanciado à Matrix do Mapa
+                    mapaPrincipal.matriz.push(sqmAtual);
+                    console.log("Adicionou o SQM")
+
+                }
+            }
+        }
+
 
         //Função Mouse - Movimentação
         addEventListener("mousemove", function(e){
@@ -165,27 +203,15 @@
         addEventListener("mousedown", function(e){
             mouse.clicado = true;
 
-            //Pegar o ponto do SQM Exato
-            let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal); 
+            // //Pegar o ponto do SQM Exato
+            // let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal); 
 
-            //Valida o clique antes de Instanciar o SQM
-            if ( sqmPosition.erro == true) {
-                return;
-            }
-            
-            //Instancia um novo SQM na posição clicada
-            let sqmAtual = new Sqm(
-                ctx,
-                sqmPosition.x * defaultSqmSizeW + mapaPrincipal.posX,
-                sqmPosition.y * defaultSqmSizeH + mapaPrincipal.posY,
-                defaultSqmSizeW,
-                defaultSqmSizeH
-            );
+            // //Valida o clique antes de Instanciar o SQM
+            // if ( sqmPosition.erro == true) {
+            //     return;
+            // }
 
-            //Adicionar o Sqm Instanciado à Matrix do Mapa
-            mapaPrincipal.matriz.push(sqmAtual);
-            
-            //console.log(mapaPrincipal.matriz);
+            console.log(mapaPrincipal.matriz);
             //console.log("Clicou");
         })
         //Função Mouse - Soltou Clique
