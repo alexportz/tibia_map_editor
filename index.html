@@ -40,7 +40,7 @@
         //Definições do Mapa
         let totalSqmX = 20;
         let totalSqmY = 10;
-        let defaultMapaPositionX = 50;
+        let defaultMapaPositionX = 150;
         let defaultMapaPositionY = 50;
         let defaultMapaSizeW = totalSqmX * defaultSqmPositionX;
         let defaultMapaSizeH = totalSqmY * defaultSqmPositionY;
@@ -143,8 +143,13 @@
             let colunaClicada = Math.floor( (mouseX - mapa.posX) / mapa.sqmSizeX);
             let linhaClicada = Math.floor( (mouseY - mapa.posY) / mapa.sqmSizeY);
 
+            //Verifica se o clique está em área permitida
+            if (colunaClicada < 0 || colunaClicada >= mapa.maxSqmX || linhaClicada < 0 || linhaClicada >= mapa.maxSqmY){
+                return { erro: true}
+            }
+
             //Retorna Coluna e Linha do clique
-            return { x: colunaClicada, y: linhaClicada }
+            return { x: colunaClicada, y: linhaClicada, erro:false }
 
             //console.log(colunaClicada, linhaClicada);
         }
@@ -162,6 +167,11 @@
 
             //Pegar o ponto do SQM Exato
             let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal); 
+
+            //Valida o clique antes de Instanciar o SQM
+            if ( sqmPosition.erro == true) {
+                return;
+            }
             
             //Instancia um novo SQM na posição clicada
             let sqmAtual = new Sqm(
