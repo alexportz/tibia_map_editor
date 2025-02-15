@@ -72,16 +72,41 @@
         }
 
         class Mapa {
-            constructor(context, positionX, positionY, sizeWidth, sizeHeight){
+            constructor(context, positionX, positionY, sizeWidth, sizeHeight, maxSqmX, maxSqmY){
                 this.posX = positionX;
                 this.posY = positionY;
                 this.sizeW = sizeWidth;
                 this.sizeH = sizeHeight;
+                this.maxSqmX = maxSqmX;
+                this.maxSqmY = maxSqmY;
+                this.sqmSizeX = sizeWidth/maxSqmX;
+                this.sqmSizeY = sizeHeight/maxSqmY;
                 this.ctx = context;
                 this.matriz = []
             }
 
             render(){
+                //Desenhar Grids do Mapa
+                let atualPointX = 0;
+                let atualPointY = 0;
+                for ( let i=0; i < this.maxSqmX; i++){
+                    for (let j=0; j < this.maxSqmY; j++){
+                        //Desenha grids.
+                        this.ctx.strokeStyle = "#000";
+                        this.ctx.strokeRect( atualPointX + this.posX, atualPointY + this.posY, this.sqmSizeX, this.sqmSizeY);
+
+                        //Incrementa valor ao posição X
+                        atualPointX += this.sqmSizeX;
+
+                        //Verifica se passou da Borda
+                        if (atualPointX >= this.sizeW){
+                            atualPointX = 0;
+                            atualPointY += this.sqmSizeY;
+                        }
+                    }
+                }
+
+                //Desenhar borda externa
                 this.ctx.strokeStyle = "#CCC";
                 this.ctx.strokeRect( this.posX, this.posY, this.sizeW, this.sizeH);
             }
@@ -101,8 +126,6 @@
             //Desenha o Mapa
             mapaPrincipal.render();
 
-            meuSqm1.render(); 
-
             //Chama a função novamente
             requestAnimationFrame(loop);
         }
@@ -111,11 +134,32 @@
         function draw(ctx,posX,posY,sizeW,sizeH){
             ctx.fillRect(posX,posY,sizeW,sizeH);
         }
+
+        //Função Mouse - Movimentação
+        addEventListener("mousemove", function(e){
+            mouse.posX = e.clientX;
+            mouse.posY = e.clientY;
+            //console.log(mouse.posX, mouse.posY);
+        })
+
+        //Função Mouse - Clique
+        addEventListener("mousedown", function(e){
+            mouse.clicado = true;
+            let meuSqm1 = new Sqm(ctx, mouse.posX, mouse.posY, defaultSqmSizeW, defaultSqmSizeH);
+            meuSqm1.render();
+            //console.log("Clicou");
+        })
+        //Função Mouse - Soltou Clique
+        addEventListener("mouseup", function(e){
+            mouse.clicado = false;
+            //console.log("Soltou");
+        })
+
         
 
         //Instâncias
-        let mapaPrincipal = new Mapa(ctx, defaultMapaPositionX, defaultMapaPositionY, defaultMapaSizeW, defaultMapaSizeH);
-        let meuSqm1 = new Sqm(ctx, defaultSqmPositionX,defaultSqmPositionY,defaultSqmSizeW,defaultSqmSizeH);
+        let mapaPrincipal = new Mapa(ctx, defaultMapaPositionX, defaultMapaPositionY, defaultMapaSizeW, defaultMapaSizeH, totalSqmX, totalSqmY);
+        let mouse = new Mouse();
 
         //Inicia o carregamento geral
         start();
