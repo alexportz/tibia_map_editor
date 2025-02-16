@@ -32,6 +32,9 @@
         //Definições de Tela
         let screenSizeW = innerWidth;
         let screenSizeH = innerHeight;
+        //Definições do tamanho de Sprite
+        let originalSpriteX = 72;
+        let originalSpriteY = 72;
         //Definições do Sqm
         let defaultSqmPositionX = 30;
         let defaultSqmPositionY = 30;
@@ -41,11 +44,21 @@
         let totalSqmX = 50;
         let totalSqmY = 20;
         let defaultMapaPositionX = 150;
-        let defaultMapaPositionY = 50;
+        let defaultMapaPositionY = 10;
         let defaultMapaSizeW = totalSqmX * defaultSqmPositionX;
         let defaultMapaSizeH = totalSqmY * defaultSqmPositionY;
 
-        
+        //Inicia o carregamento da Imagem do SpriteMap
+        let spriteMap = new Image();
+        spriteMap.src = "./sprites/mapa.jpg";  //72px cada SqmRenderizado
+
+        //DEFINIÇÕES DO SPRITE
+        //Define o total de SQM no Sprite carregado
+        let totalDeSqmSpriteX = spriteMap.width/originalSpriteX;
+        let totalDeSqmSpriteY = spriteMap.height/originalSpriteY;
+        let sqmPadraoSpriteX = 4 * originalSpriteX;
+        let sqmPadraoSpriteY = 1 * originalSpriteY;
+
         //////////////////////CLASSES////////////////////////////////
         class Mouse {
             constructor(){
@@ -57,20 +70,38 @@
         }
 
         class Sqm {
-            constructor( context, positionX, positionY, sizeWidth, sizeHeight, numeroColuna, numeroLinha){
+            constructor( context, sprite, positionX, positionY, sizeWidth, sizeHeight, numeroColuna, numeroLinha,originalSpriteX,originalSpriteY, sqmPadraoSpriteX,sqmPadraoSpriteY){
                 this.posX = positionX;
                 this.posY = positionY;
                 this.sizeW = sizeWidth;
                 this.sizeH = sizeHeight;
+                this.tamanhoOriginalDaSpriteX = originalSpriteX;
+                this.tamanhoOriginalDaSpriteY = originalSpriteY;
+                this.posicaoInicialSpriteX = sqmPadraoSpriteX;
+                this.posicaoInicialSpriteY = sqmPadraoSpriteY;
                 this.ctx = context;
-                this.actualSprite = null;
-                this.actualColor = "rgba(255,0,0,0.5)";
+                this.actualSprite = sprite;
+                this.actualColor = "rgba(255,0,0,0.1)";
                 this.coluna = numeroColuna;
                 this.linha = numeroLinha;
             }
             render(){
-                this.ctx.fillStyle = this.actualColor;
-                this.ctx.fillRect(this.posX,this.posY,this.sizeW,this.sizeH);
+                // this.ctx.fillStyle = this.actualColor;
+                // this.ctx.fillRect(this.posX,this.posY,this.sizeW,this.sizeH);
+
+                //Renderiza a Sprite no Sqm atual
+                this.ctx.drawImage( 
+                    this.actualSprite, 
+                    this.posicaoInicialSpriteX, 
+                    this.posicaoInicialSpriteY, 
+                    this.tamanhoOriginalDaSpriteX, 
+                    this.tamanhoOriginalDaSpriteY, 
+                    this.posX, 
+                    this.posY, 
+                    this.sizeW, 
+                    this.sizeH
+                );
+
             }
         }
 
@@ -96,6 +127,7 @@
                     for (let j=0; j < this.maxSqmY; j++){
                         //Desenha grids.
                         this.ctx.strokeStyle = "#000";
+                        this.ctx.lineWidth = .1;
                         this.ctx.strokeRect( atualPointX + this.posX, atualPointY + this.posY, this.sqmSizeX, this.sqmSizeY);
 
                         //Incrementa valor ao posição X
@@ -168,12 +200,17 @@
                     //Instancia um novo SQM na posição clicada
                     let sqmAtual = new Sqm(
                         ctx,
+                        spriteMap,
                         sqmColunaX * defaultSqmSizeW + mapaPrincipal.posX,
                         sqmColunaY * defaultSqmSizeH + mapaPrincipal.posY,
                         defaultSqmSizeW,
                         defaultSqmSizeH,
                         sqmColunaX,
-                        sqmColunaY
+                        sqmColunaY,
+                        originalSpriteX,
+                        originalSpriteY,
+                        sqmPadraoSpriteX,
+                        sqmPadraoSpriteY
                     );
 
                     //Incrementa o nro da Coluna
