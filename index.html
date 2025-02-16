@@ -43,10 +43,14 @@
         //Definições do Mapa
         let totalSqmX = 50;
         let totalSqmY = 20;
-        let defaultMapaPositionX = 150;
+        let defaultMapaPositionX = 200;
         let defaultMapaPositionY = 10;
         let defaultMapaSizeW = totalSqmX * defaultSqmPositionX;
         let defaultMapaSizeH = totalSqmY * defaultSqmPositionY;
+        
+        //Definições do Menu de Sprite
+        let tamanhoSpriteSqmX = 40;
+        let tamanhoSpriteSqmY = 40;
 
         //Inicia o carregamento da Imagem do SpriteMap
         let spriteMap = new Image();
@@ -280,11 +284,63 @@
             //console.log("Soltou");
         })
 
+        //Função que Cria menu lateral de SPRITES
+        function menuSprites(ctx, sprite,totalDeSqmSpriteX,totalDeSqmSpriteY, tamanhoSpriteSqmX,tamanhoSpriteSqmY){
+            
+            let temporarioPosX = 0;
+            let temporarioPosY = 0;
+            let temporarioRenderPosX = 0;
+            let temporarioRenderPosY = 0;
+            let maxColuna = 3;
+            //LOOP para cadas SQM do SPRITE e desenhar o SQM no Menu Lateral
+            for ( let i=0; i < totalDeSqmSpriteX; i++){
+                for (let j=0; j < totalDeSqmSpriteY; j++) {
+                    
+                    //RENDERIZA O SPRITE Na barra Lateral
+                    ctx.drawImage( 
+                        sprite,
+                        temporarioRenderPosX * originalSpriteX,
+                        temporarioRenderPosY * originalSpriteY,
+                        originalSpriteX,
+                        originalSpriteY,
+                        temporarioPosX * tamanhoSpriteSqmX,
+                        temporarioPosY * tamanhoSpriteSqmY,
+                        tamanhoSpriteSqmX,
+                        tamanhoSpriteSqmY
+                    );
+
+                    //Soma valor no Temporario X
+                    temporarioPosX++;
+                    temporarioRenderPosX++;
+
+                    //Verifica se bateu no Limite do TAMANHO DA SPRITE
+                    if (temporarioRenderPosX >= totalDeSqmSpriteX) {
+                        temporarioRenderPosX = 0;
+                        temporarioRenderPosY++;
+                    }
+
+                    //Verifica se bateu no Limite do MENU
+                    if (temporarioPosX >= maxColuna) {
+                        temporarioPosX = 0;
+                        temporarioPosY++;
+                    }
+
+                }
+            }
+
+        }
         
 
         //Instâncias
         let mapaPrincipal = new Mapa(ctx, defaultMapaPositionX, defaultMapaPositionY, defaultMapaSizeW, defaultMapaSizeH, totalSqmX, totalSqmY);
         let mouse = new Mouse();
+
+        //CARREGA FUNÇÃO APENAS APÓS CARREGAR A IMAGEM TOTAL DO SPRITE
+        spriteMap.onload = function(){
+            //CHAMA FUNÇÃO DE CRIAR MENU LATERAL
+            menuSprites(ctx,spriteMap,totalDeSqmSpriteX,totalDeSqmSpriteY,tamanhoSpriteSqmX,tamanhoSpriteSqmY);
+        }
+
 
         //Inicia o carregamento geral
         start();
