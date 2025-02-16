@@ -33,13 +33,13 @@
         let screenSizeW = innerWidth;
         let screenSizeH = innerHeight;
         //Definições do Sqm
-        let defaultSqmPositionX = 50;
-        let defaultSqmPositionY = 50;
-        let defaultSqmSizeW = 50;
-        let defaultSqmSizeH = 50;
+        let defaultSqmPositionX = 30;
+        let defaultSqmPositionY = 30;
+        let defaultSqmSizeW = 30;
+        let defaultSqmSizeH = 30;
         //Definições do Mapa
-        let totalSqmX = 30;
-        let totalSqmY = 10;
+        let totalSqmX = 50;
+        let totalSqmY = 20;
         let defaultMapaPositionX = 150;
         let defaultMapaPositionY = 50;
         let defaultMapaSizeW = totalSqmX * defaultSqmPositionX;
@@ -64,11 +64,12 @@
                 this.sizeH = sizeHeight;
                 this.ctx = context;
                 this.actualSprite = null;
-                this.actualColor = null;
+                this.actualColor = "rgba(255,0,0,0.5)";
                 this.coluna = numeroColuna;
                 this.linha = numeroLinha;
             }
             render(){
+                this.ctx.fillStyle = this.actualColor;
                 this.ctx.fillRect(this.posX,this.posY,this.sizeW,this.sizeH);
             }
         }
@@ -192,26 +193,48 @@
             }
         }
 
+        //Função - Editar SQMS
+        function editarSqms(){
+
+            //Pegar o ponto do SQM Exato
+            let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal);
+            //console.log ( sqmPosition.x, sqmPosition.y);
+
+            //Valida o clique antes de Instanciar o SQM
+            if ( sqmPosition.erro == true) {
+                return;
+            }
+
+            //Buscar o Objeto dentro da Lista
+            let objetoAtual = mapaPrincipal.matriz.find( sqm => sqm.coluna === sqmPosition.x && sqm.linha === sqmPosition.y);
+            
+            //Altera a cor do SQM encontrado
+            objetoAtual.actualColor = "rgba(255,255,255,0.5)";
+        }
 
         //Função Mouse - Movimentação
         addEventListener("mousemove", function(e){
             mouse.posX = e.clientX;
             mouse.posY = e.clientY;
             //console.log(mouse.posX, mouse.posY);
+
+            //Edita o SQM clicado se o Mouse estiver clicado
+            if(mouse.clicado == true) {
+                editarSqms();
+            }
+
         })
         //Função Mouse - Clique
         addEventListener("mousedown", function(e){
             mouse.clicado = true;
+            
+            //Edita o SQM clicado
+            editarSqms();
 
-            // //Pegar o ponto do SQM Exato
-            // let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal); 
+            //Retornar o resultado o objeto encontrado
+            //console.log(objetoAtual);
 
-            // //Valida o clique antes de Instanciar o SQM
-            // if ( sqmPosition.erro == true) {
-            //     return;
-            // }
-
-            console.log(mapaPrincipal.matriz);
+            //console.log(mapaPrincipal.matriz);
             //console.log("Clicou");
         })
         //Função Mouse - Soltou Clique
