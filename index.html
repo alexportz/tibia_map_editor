@@ -16,6 +16,7 @@
 
 </head>
 <body>
+    <canvas id="menu"></canvas>
     <canvas id="mapa"></canvas>
 
 
@@ -23,10 +24,17 @@
         //DEFINE AS VARIAVEIS DO CANVAS
         const cnv = document.querySelector("#mapa");
         const ctx = cnv.getContext("2d");
+        const cnvInfo = cnv.getBoundingClientRect();
+
+        const cnvMenu = document.querySelector("#menu");
+        const ctxMenu = cnvMenu.getContext("2d");
+        const cnvMenuInfo = cnvMenu.getBoundingClientRect();
 
         //DEFINE O TAMANHO DO CANVAS
         cnv.width = innerWidth;
         cnv.height = innerHeight;
+        cnvMenu.width = innerWidth;
+        cnvMenu.height = 120;
 
         //DEFINIÇÕES INICIAIS DO PROJETO
         //Definições de Tela
@@ -36,21 +44,27 @@
         let originalSpriteX = 72;
         let originalSpriteY = 72;
         //Definições do Sqm
-        let defaultSqmPositionX = 30;
-        let defaultSqmPositionY = 30;
-        let defaultSqmSizeW = 30;
-        let defaultSqmSizeH = 30;
+        let defaultSqmPositionX = 10;
+        let defaultSqmPositionY = 10;
+        let defaultSqmSizeW = 60;
+        let defaultSqmSizeH = 60;
         //Definições do Mapa
-        let totalSqmX = 50;
-        let totalSqmY = 20;
-        let defaultMapaPositionX = 200;
-        let defaultMapaPositionY = 10;
-        let defaultMapaSizeW = totalSqmX * defaultSqmPositionX;
-        let defaultMapaSizeH = totalSqmY * defaultSqmPositionY;
+        let totalSqmX = 20;
+        let totalSqmY = 10;
+        let defaultMapaPositionX = 0; //Define a posição inicial do Mapa na tela X
+        let defaultMapaPositionY = 0; //Define a posição inicial do Mapa na tela Y
+        let defaultMapaSizeW = totalSqmX * defaultSqmSizeW;
+        let defaultMapaSizeH = totalSqmY * defaultSqmSizeH;
         
-        //Definições do Menu de Sprite
-        let tamanhoSpriteSqmX = 40;
-        let tamanhoSpriteSqmY = 40;
+        //Definições do Menu de seleção (Imagem de Sprite)
+        let posicaoMenuSpriteX = 0; //margem do Menu de seleção
+        let posicaoMenuSpriteY = 0; //margem do Menu de seleção
+        let tamanhoSpriteSqmX = 60; //Define o tamanho do render do SQM na tela do Menu (largura)
+        let tamanhoSpriteSqmY = 60; //Define o tamanho do render do SQM na tela do Menu (altura)
+        let qntMaxSqmHorizontal = 30;
+        let qntMaxSqmVertical = 3;
+        let margemDoMenuX = 0;
+        let margemDoMenuY = 0;
 
         //Inicia o carregamento da Imagem do SpriteMap
         let spriteMap = new Image();
@@ -58,16 +72,19 @@
 
         //DEFINIÇÕES DO SPRITE
         //Define o total de SQM no Sprite carregado
-        let totalDeSqmSpriteX = spriteMap.width/originalSpriteX;
-        let totalDeSqmSpriteY = spriteMap.height/originalSpriteY;
-        let sqmPadraoSpriteX = 4 * originalSpriteX;
-        let sqmPadraoSpriteY = 1 * originalSpriteY;
+        let totalDeSqmSpriteX = spriteMap.width/originalSpriteX; //Define a hora do corte horizontal na Imagem do Sprite
+        let totalDeSqmSpriteY = spriteMap.height/originalSpriteY; //Define a hora do corte vertical na Imagem do Sprite
+        
+        let sqmPadraoSpriteX = 4 * originalSpriteX; //Define o SQM padrão de carregamento inicial do Mapa (posX do Sprite)
+        let sqmPadraoSpriteY = 1 * originalSpriteY; //Define o SQM padrão de carregamento inicial do Mapa (posY do Sprite)
 
         //////////////////////CLASSES////////////////////////////////
         class Mouse {
             constructor(){
                 this.posX = 0;
                 this.posY = 0;
+                this.referencialPosX = null;
+                this.referencialPosY = null;
                 this.clicado = false;
                 this.movendo = false;
             }
@@ -85,14 +102,11 @@
                 this.posicaoInicialSpriteY = sqmPadraoSpriteY;
                 this.ctx = context;
                 this.actualSprite = sprite;
-                this.actualColor = "rgba(255,0,0,0.1)";
+                this.actualColor = "rgba(0,0,0,0.9)";
                 this.coluna = numeroColuna;
                 this.linha = numeroLinha;
             }
             render(){
-                // this.ctx.fillStyle = this.actualColor;
-                // this.ctx.fillRect(this.posX,this.posY,this.sizeW,this.sizeH);
-
                 //Renderiza a Sprite no Sqm atual
                 this.ctx.drawImage( 
                     this.actualSprite, 
@@ -106,6 +120,9 @@
                     this.sizeH
                 );
 
+                //Desenha o GRID após carregar o RENDER do SQM
+                this.ctx.strokeStyle = this.actualColor;
+                this.ctx.strokeRect(this.posX,this.posY,this.sizeW,this.sizeH);
             }
         }
 
@@ -151,43 +168,77 @@
             }
         }
 
+        class Menu {
+            constructor(contexto, sprite, positionX, positionY, totalDeSqmSpriteX, totalDeSqmSpriteY, tamanhoSpriteSqmX,tamanhoSpriteSqmY){
+                this.posX = positionX;
+                this.posY = positionY;
+                this.ctx = contexto;
+                this.sprite = sprite;
+                this.totalDeSqmSpriteX = totalDeSqmSpriteX; this.maxSqmX = totalDeSqmSpriteX;
+                this.totalDeSqmSpriteY = totalDeSqmSpriteY; this.maxSqmY = totalDeSqmSpriteY;
+                this.tamanhoSpriteSqmX = tamanhoSpriteSqmX; this.sqmSizeX = tamanhoSpriteSqmX;
+                this.tamanhoSpriteSqmY = tamanhoSpriteSqmY; this.sqmSizeY = tamanhoSpriteSqmY;
+                this.sqmSelecionado = null;
+                this.matriz = [];
+            }
+        }
+
         //////////////////////FUNÇÔES////////////////////////////////
         //Função Inicial que é chamada ao iniciar a página
         function start(){
             //Inicia o Loop
             loop();
 
+            //Instancia todos os SQMS do MENU DE SELEÇÃO
+            instanciaTodosSqmsDoMenu(totalDeSqmSpriteX, totalDeSqmSpriteY, qntMaxSqmHorizontal, qntMaxSqmVertical, tamanhoSpriteSqmX, tamanhoSpriteSqmY,margemDoMenuX,margemDoMenuY);
+
             //Instancia todos os SQMS
             instanciaTodosSqms(totalSqmX, totalSqmY);
+
         }
 
         //Função que executa a todo momento, e chama ela mesmo (loop)
         function loop(){
 
-            //Desenha o Mapa
-            mapaPrincipal.render();
+           //Desenha o Mapa
+           mapaPrincipal.render();
 
-            //Renderiza cada Sqm da Matrix
-            mapaPrincipal.matriz.forEach( (sqm) => { sqm.render(); })
+           //Renderiza cada Sqm da Matrix
+           meuMenu.matriz.forEach( (sqm) => { sqm.render(); })
+
+           //Renderiza cada Sqm da Matrix
+           mapaPrincipal.matriz.forEach( (sqm) => { sqm.render(); })
+
+           //Destaca o SQM do Menu clicado
+           contornaSqmSelecionado();
 
             //Chama a função novamente
             requestAnimationFrame(loop);
         }
 
         //Função que Retorna posição exata do SQM
-        function retornarSqmExato(mouseX, mouseY, mapa){
-            let colunaClicada = Math.floor( (mouseX - mapa.posX) / mapa.sqmSizeX);
-            let linhaClicada = Math.floor( (mouseY - mapa.posY) / mapa.sqmSizeY);
+        function retornarSqmExato( objeto, mouse){
+            //Retorna dados do Objeto Canva clicado
+            let dadosDoObjeto = objeto.getBoundingClientRect(); 
 
-            //Verifica se o clique está em área permitida
-            if (colunaClicada < 0 || colunaClicada >= mapa.maxSqmX || linhaClicada < 0 || linhaClicada >= mapa.maxSqmY){
-                return { erro: true}
+            //Resetar posição do Mouse referente ao Objeto clicado
+            mouse.referencialPosX = mouse.posX - dadosDoObjeto.x;
+            mouse.referencialPosY = mouse.posY - dadosDoObjeto.y;
+
+            let colunaClicada = null;
+            let linhaClicada = null;
+
+            //VERIFICA QUAL CANVA FOI CLICADO
+            if(objeto.id == "menu") {
+                colunaClicada = Math.floor( ( mouse.referencialPosX - meuMenu.posX) / meuMenu.sqmSizeX);
+                linhaClicada = Math.floor( ( mouse.referencialPosY - meuMenu.posY) / meuMenu.sqmSizeY);
+            } else { //Caso for qualquer clique considera o Mapa
+                colunaClicada = Math.floor( ( mouse.referencialPosX - mapaPrincipal.posX) / mapaPrincipal.sqmSizeX);
+                linhaClicada = Math.floor( ( mouse.referencialPosY - mapaPrincipal.posY) / mapaPrincipal.sqmSizeY);        
             }
-
-            //Retorna Coluna e Linha do clique
+             
+            // //Retorna Coluna e Linha do clique
             return { x: colunaClicada, y: linhaClicada, erro:false }
-
-            //console.log(colunaClicada, linhaClicada);
         }
 
         //Função que Instancia os SQMs
@@ -234,23 +285,98 @@
             }
         }
 
-        //Função - Editar SQMS
-        function editarSqms(){
-
-            //Pegar o ponto do SQM Exato
-            let sqmPosition = retornarSqmExato( mouse.posX, mouse.posY , mapaPrincipal);
-            //console.log ( sqmPosition.x, sqmPosition.y);
-
-            //Valida o clique antes de Instanciar o SQM
-            if ( sqmPosition.erro == true) {
-                return;
-            }
-
-            //Buscar o Objeto dentro da Lista
-            let objetoAtual = mapaPrincipal.matriz.find( sqm => sqm.coluna === sqmPosition.x && sqm.linha === sqmPosition.y);
+        //Função que Instancia os SQMs do MENU de Seleção
+        function instanciaTodosSqmsDoMenu(totalDeSqmSpriteX, totalDeSqmSpriteY, qntMaxSqmHorizontal, qntMaxSqmVertical, tamanhoSpriteSqmX, tamanhoSpriteSqmY,margemDoMenuX,margemDoMenuY){
             
-            //Altera a cor do SQM encontrado
-            objetoAtual.actualColor = "rgba(255,255,255,0.5)";
+            //Variaveis contadoras temporarias
+            let colunaAtual = 0; //controle de limite do render do menu no DOM (horizontal)
+            let linhaAtual = 0; 
+            let colunaAtualDoSprite = 0; //controle de limite do corte da imagem do Sprite (horizontal)
+            let linhaAtualDoSprite = 0;
+            //Inicia o Loop
+            for (let i=0; i < totalDeSqmSpriteX; i++){
+                for (let j=0; j < totalDeSqmSpriteY; j++){
+                    //Instancia um novo SQM na posição clicada
+                    let sqmDoMenu = new Sqm(
+                        ctxMenu,
+                        spriteMap,
+                        colunaAtual * (tamanhoSpriteSqmX + margemDoMenuX) + meuMenu.posX, //Posicao do render do Sqm horizontal
+                        linhaAtual * (tamanhoSpriteSqmY + margemDoMenuY) + meuMenu.posY, //Posicao do render do Sqm Vertical
+                        tamanhoSpriteSqmX, //Tam horizontal de Render do Sqm no DOM
+                        tamanhoSpriteSqmY, //Tam vertical de Render do Sqm no DOM
+                        colunaAtual, //Nro da Coluna do SQM
+                        linhaAtual, //Nro da Linha do SQM
+                        originalSpriteX, //72
+                        originalSpriteY, //72
+                        colunaAtualDoSprite * originalSpriteX, //Posicao de Fatiamento do Sprite (horizontal)
+                        linhaAtualDoSprite * originalSpriteY //Posição do fatiamento do Sprite (vertical)
+                    );
+ 
+                    //Adicionar o Sqm Instanciado à Matrix do MENU de Seleção
+                    meuMenu.matriz.push(sqmDoMenu);
+
+                    
+                    //////CONTROLE DO MENU NA TELA ///////////
+                    //Incrementa o valor da coluna atual (do render do Menu no DOM)
+                    colunaAtual++;
+                    //Verifica se a colunaAtual bateu no limite
+                    if (colunaAtual >= qntMaxSqmHorizontal){
+                        colunaAtual = 0;
+                        linhaAtual++;
+                    }
+                    //////FIM DO CONTROLE DO MENU NA TELA ///////////
+
+                    //////CONTROLE DO FATIAMENTO DA SPRITE RENDERIZADA ///////////
+                    //Incrementa o valor da colunaAtualDoSprite (do corte do Sprite)
+                    colunaAtualDoSprite++;
+
+                    //Verifica se a colunaAtualDoSprite bateu no limite do tamanho da Imagem do Sprite
+                    if (colunaAtualDoSprite >= totalDeSqmSpriteX){
+                        colunaAtualDoSprite = 0;
+                        linhaAtualDoSprite++;
+                    }
+                    //////FIM CONTROLE DO FATIAMENTO DA SPRITE RENDERIZADA ///////////
+
+
+                }
+            }
+        }
+
+        //Função - Editar SQMS
+        function editarSqms(e){ 
+            let objetoClicado = e.target;
+            let nomeObjetoClicado = objetoClicado.id;
+            let sqmInfo = retornarSqmExato( objetoClicado, mouse);
+
+            //VERIFICA O CANVA CLICADO
+            if(nomeObjetoClicado == "menu"){
+                let sqmClicado = meuMenu.matriz.find( sqm => sqm.coluna === sqmInfo.x && sqm.linha === sqmInfo.y);
+                meuMenu.sqmSelecionado = sqmClicado; 
+                //console.log(sqmClicado);
+            } else {
+                let sqmClicado = mapaPrincipal.matriz.find( sqm => sqm.coluna === sqmInfo.x && sqm.linha === sqmInfo.y);
+                //CLONA O SQM CLICADO
+                sqmClicado.sqmPadraoSpriteX = meuMenu.sqmSelecionado.posicaoInicialSpriteX;
+                sqmClicado.sqmPadraoSpriteY = meuMenu.sqmSelecionado.posicaoInicialSpriteY;
+                console.log(sqmClicado.sqmPadraoSpriteX);
+                console.log(sqmClicado.sqmPadraoSpriteY);
+
+            }
+        }
+
+        //Função que destaca o SQM selecionado
+        function contornaSqmSelecionado(){
+            //Verifica se tem SQM clicado
+            if(meuMenu.sqmSelecionado !== null){
+                let sqmAtual = meuMenu.sqmSelecionado;
+                ctxMenu.save();
+                ctxMenu.fillStyle = "rgba(0,255,0,0.5)";
+                ctxMenu.strokeStyle = "#FF0";
+                ctxMenu.lineWidth = 3;
+                ctxMenu.fillRect( sqmAtual.posX, sqmAtual.posY, sqmAtual.sizeW, sqmAtual.sizeH );
+                ctxMenu.strokeRect( sqmAtual.posX, sqmAtual.posY, sqmAtual.sizeW, sqmAtual.sizeH );
+                ctxMenu.restore();
+            }
         }
 
         //Função Mouse - Movimentação
@@ -261,7 +387,7 @@
 
             //Edita o SQM clicado se o Mouse estiver clicado
             if(mouse.clicado == true) {
-                editarSqms();
+                editarSqms(e);
             }
 
         })
@@ -270,7 +396,10 @@
             mouse.clicado = true;
             
             //Edita o SQM clicado
-            editarSqms();
+            editarSqms(e);
+
+            //Exibe os SQMs da Matriz do Menu
+            //console.log(meuMenu.matriz);
 
             //Retornar o resultado o objeto encontrado
             //console.log(objetoAtual);
@@ -284,62 +413,15 @@
             //console.log("Soltou");
         })
 
-        //Função que Cria menu lateral de SPRITES
-        function menuSprites(ctx, sprite,totalDeSqmSpriteX,totalDeSqmSpriteY, tamanhoSpriteSqmX,tamanhoSpriteSqmY){
-            
-            let temporarioPosX = 0;
-            let temporarioPosY = 0;
-            let temporarioRenderPosX = 0;
-            let temporarioRenderPosY = 0;
-            let maxColuna = 3;
-            //LOOP para cadas SQM do SPRITE e desenhar o SQM no Menu Lateral
-            for ( let i=0; i < totalDeSqmSpriteX; i++){
-                for (let j=0; j < totalDeSqmSpriteY; j++) {
-                    
-                    //RENDERIZA O SPRITE Na barra Lateral
-                    ctx.drawImage( 
-                        sprite,
-                        temporarioRenderPosX * originalSpriteX,
-                        temporarioRenderPosY * originalSpriteY,
-                        originalSpriteX,
-                        originalSpriteY,
-                        temporarioPosX * tamanhoSpriteSqmX,
-                        temporarioPosY * tamanhoSpriteSqmY,
-                        tamanhoSpriteSqmX,
-                        tamanhoSpriteSqmY
-                    );
-
-                    //Soma valor no Temporario X
-                    temporarioPosX++;
-                    temporarioRenderPosX++;
-
-                    //Verifica se bateu no Limite do TAMANHO DA SPRITE
-                    if (temporarioRenderPosX >= totalDeSqmSpriteX) {
-                        temporarioRenderPosX = 0;
-                        temporarioRenderPosY++;
-                    }
-
-                    //Verifica se bateu no Limite do MENU
-                    if (temporarioPosX >= maxColuna) {
-                        temporarioPosX = 0;
-                        temporarioPosY++;
-                    }
-
-                }
-            }
-
-        }
-        
-
         //Instâncias
         let mapaPrincipal = new Mapa(ctx, defaultMapaPositionX, defaultMapaPositionY, defaultMapaSizeW, defaultMapaSizeH, totalSqmX, totalSqmY);
         let mouse = new Mouse();
+        
+        //INSTANCIA O MENU
+        let meuMenu = new Menu (ctxMenu,spriteMap,posicaoMenuSpriteX, posicaoMenuSpriteY, totalDeSqmSpriteX,totalDeSqmSpriteY,tamanhoSpriteSqmX,tamanhoSpriteSqmY);
 
-        //CARREGA FUNÇÃO APENAS APÓS CARREGAR A IMAGEM TOTAL DO SPRITE
-        spriteMap.onload = function(){
-            //CHAMA FUNÇÃO DE CRIAR MENU LATERAL
-            menuSprites(ctx,spriteMap,totalDeSqmSpriteX,totalDeSqmSpriteY,tamanhoSpriteSqmX,tamanhoSpriteSqmY);
-        }
+        //CARREGA A SPRITE APOS ELA CARREGAR E APLICA NO MENU
+        spriteMap.onload = function(){ meuMenu.sprite = spriteMap; }
 
 
         //Inicia o carregamento geral
