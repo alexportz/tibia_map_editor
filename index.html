@@ -355,12 +355,11 @@
                 //console.log(sqmClicado);
             } else {
                 let sqmClicado = mapaPrincipal.matriz.find( sqm => sqm.coluna === sqmInfo.x && sqm.linha === sqmInfo.y);
+                console.log(sqmClicado);
+                console.log(meuMenu.sqmSelecionado);
                 //CLONA O SQM CLICADO
-                sqmClicado.sqmPadraoSpriteX = meuMenu.sqmSelecionado.posicaoInicialSpriteX;
-                sqmClicado.sqmPadraoSpriteY = meuMenu.sqmSelecionado.posicaoInicialSpriteY;
-                console.log(sqmClicado.sqmPadraoSpriteX);
-                console.log(sqmClicado.sqmPadraoSpriteY);
-
+                sqmClicado.posicaoInicialSpriteX = meuMenu.sqmSelecionado.posicaoInicialSpriteX;
+                sqmClicado.posicaoInicialSpriteY = meuMenu.sqmSelecionado.posicaoInicialSpriteY;
             }
         }
 
