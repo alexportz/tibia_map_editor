@@ -46,25 +46,27 @@
         //Definições do Sqm
         let defaultSqmPositionX = 10;
         let defaultSqmPositionY = 10;
-        let defaultSqmSizeW = 60;
-        let defaultSqmSizeH = 60;
+        let defaultSqmSizeW = 40; //Define a largura do SQM do MAPA
+        let defaultSqmSizeH = 40; //Define a altura do SQM do MAPA
         //Definições do Mapa
-        let totalSqmX = 20;
-        let totalSqmY = 10;
-        let defaultMapaPositionX = 0; //Define a posição inicial do Mapa na tela X
-        let defaultMapaPositionY = 0; //Define a posição inicial do Mapa na tela Y
+        let totalSqmX = 30; //Total de SQM na largura do Mapa
+        let totalSqmY = 10; //Total de SQM na altura do Mapa
+        let defaultMapaPositionX = innerWidth/2 - ((defaultSqmSizeW * totalSqmX)/2); //Define a posição inicial do Mapa na tela X
+        let defaultMapaPositionY = 99; //Define a posição inicial do Mapa na tela Y
         let defaultMapaSizeW = totalSqmX * defaultSqmSizeW;
         let defaultMapaSizeH = totalSqmY * defaultSqmSizeH;
         
         //Definições do Menu de seleção (Imagem de Sprite)
-        let posicaoMenuSpriteX = 0; //margem do Menu de seleção
-        let posicaoMenuSpriteY = 0; //margem do Menu de seleção
-        let tamanhoSpriteSqmX = 60; //Define o tamanho do render do SQM na tela do Menu (largura)
-        let tamanhoSpriteSqmY = 60; //Define o tamanho do render do SQM na tela do Menu (altura)
+        let tamanhoSpriteSqmX = 40; //Define o tamanho do render do SQM na tela do Menu (largura)
+        let tamanhoSpriteSqmY = 40; //Define o tamanho do render do SQM na tela do Menu (altura)
         let qntMaxSqmHorizontal = 30;
         let qntMaxSqmVertical = 3;
+        let posicaoMenuSpriteX = innerWidth/2 - ((tamanhoSpriteSqmX * qntMaxSqmHorizontal)/2); //margem do Menu de seleção
+        let posicaoMenuSpriteY = 0; //margem do Menu de seleção
         let margemDoMenuX = 0;
         let margemDoMenuY = 0;
+        let larguraTotalMenuSuperior = tamanhoSpriteSqmX * qntMaxSqmHorizontal;
+        let alturaTotalMenuSuperior = tamanhoSpriteSqmY * qntMaxSqmVertical;
 
         //Inicia o carregamento da Imagem do SpriteMap
         let spriteMap = new Image();
@@ -186,8 +188,8 @@
         //////////////////////FUNÇÔES////////////////////////////////
         //Função Inicial que é chamada ao iniciar a página
         function start(){
-            //Inicia o Loop
-            loop();
+// //Inicia o Loop
+// loop();
 
             //Instancia todos os SQMS do MENU DE SELEÇÃO
             instanciaTodosSqmsDoMenu(totalDeSqmSpriteX, totalDeSqmSpriteY, qntMaxSqmHorizontal, qntMaxSqmVertical, tamanhoSpriteSqmX, tamanhoSpriteSqmY,margemDoMenuX,margemDoMenuY);
@@ -195,6 +197,15 @@
             //Instancia todos os SQMS
             instanciaTodosSqms(totalSqmX, totalSqmY);
 
+
+            //DEFINE O SQM PADRAO DE DESENHO CASO NENHUM FOI SELECIONADO NO MENU
+            if(meuMenu.sqmSelecionado == null) {
+                sqmPadraoDoMenu = meuMenu.matriz.find( sqm => sqm.coluna === 16 && sqm.linha === 0);
+                //DEFINE O SQM CLICADO PARA O OBJETO DO MENU 
+                meuMenu.sqmSelecionado = sqmPadraoDoMenu; 
+            } 
+//Inicia o Loop
+loop();
         }
 
         //Função que executa a todo momento, e chama ela mesmo (loop)
@@ -345,21 +356,42 @@
         //Função - Editar SQMS
         function editarSqms(e){ 
             let objetoClicado = e.target;
-            let nomeObjetoClicado = objetoClicado.id;
-            let sqmInfo = retornarSqmExato( objetoClicado, mouse);
+            let nomeObjetoClicado = objetoClicado.id; 
+            let sqmInfo = retornarSqmExato( objetoClicado, mouse); 
+
+            //Valida a posição do Clique
+            if( 
+                mouse.posX < meuMenu.posX || mouse.posX > meuMenu.posX + larguraTotalMenuSuperior ||
+                mouse.posY < meuMenu.posY && mouse.posY > meuMenu.posY + alturaTotalMenuSuperior
+            ) {
+                // console.log("Esta fora DO MENU");
+                return;
+            }  
 
             //VERIFICA O CANVA CLICADO
-            if(nomeObjetoClicado == "menu"){
+            if(nomeObjetoClicado == "menu"){ 
                 let sqmClicado = meuMenu.matriz.find( sqm => sqm.coluna === sqmInfo.x && sqm.linha === sqmInfo.y);
+
+                //DEFINE O SQM CLICADO PARA O OBJETO DO MENU 
                 meuMenu.sqmSelecionado = sqmClicado; 
-                //console.log(sqmClicado);
-            } else {
+                
+                // console.log(sqmClicado);
+                //16x0
+                //6x0
+            } else if(nomeObjetoClicado == "mapa"){  
                 let sqmClicado = mapaPrincipal.matriz.find( sqm => sqm.coluna === sqmInfo.x && sqm.linha === sqmInfo.y);
-                console.log(sqmClicado);
-                console.log(meuMenu.sqmSelecionado);
+                if(sqmClicado == undefined){
+                    return
+                }
+                // console.log(sqmClicado);
+                // console.log(meuMenu.sqmSelecionado);
                 //CLONA O SQM CLICADO
                 sqmClicado.posicaoInicialSpriteX = meuMenu.sqmSelecionado.posicaoInicialSpriteX;
                 sqmClicado.posicaoInicialSpriteY = meuMenu.sqmSelecionado.posicaoInicialSpriteY;
+            }
+            else {
+                // console.log("Invalid place");
+                return
             }
         }
 
@@ -383,6 +415,15 @@
             mouse.posX = e.clientX;
             mouse.posY = e.clientY;
             //console.log(mouse.posX, mouse.posY);
+ 
+            //Valida a posição do Clique
+            if(
+                mouse.posX < meuMenu.posX || mouse.posX > meuMenu.posX + larguraTotalMenuSuperior ||
+                mouse.posY < meuMenu.posY && mouse.posY > meuMenu.posY + alturaTotalMenuSuperior
+            ) {
+                // console.log("Ignora movimento fora do menu");
+                return;
+            }
 
             //Edita o SQM clicado se o Mouse estiver clicado
             if(mouse.clicado == true) {
@@ -393,24 +434,16 @@
         //Função Mouse - Clique
         addEventListener("mousedown", function(e){
             mouse.clicado = true;
-            
+
             //Edita o SQM clicado
             editarSqms(e);
 
-            //Exibe os SQMs da Matriz do Menu
-            //console.log(meuMenu.matriz);
-
-            //Retornar o resultado o objeto encontrado
-            //console.log(objetoAtual);
-
-            //console.log(mapaPrincipal.matriz);
-            //console.log("Clicou");
-        })
+        });
         //Função Mouse - Soltou Clique
         addEventListener("mouseup", function(e){
             mouse.clicado = false;
             //console.log("Soltou");
-        })
+        });
 
         //Instâncias
         let mapaPrincipal = new Mapa(ctx, defaultMapaPositionX, defaultMapaPositionY, defaultMapaSizeW, defaultMapaSizeH, totalSqmX, totalSqmY);
